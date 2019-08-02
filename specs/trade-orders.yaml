@@ -1,0 +1,86 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Trade Order API
+  license:
+    name: Apache 2.0
+  description: trade order API
+  contact:
+    name: Francis Gnanamuthu
+paths:
+  /trade/orders:
+    post:
+      summary: Create a trade order
+      operationId: createOrder
+      tags:
+        - trade-order-api
+
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Orders'
+      responses:
+        '201':
+          description: Success
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    Orders:
+      type: array
+      items:
+        $ref: "#/components/schemas/Order"
+    Order:
+      required:
+        - side
+        - security
+        - fund-name
+        - quantity
+        - price
+      properties:
+        side:
+          type: string
+          enum:
+            - Buy
+            - Sell
+          example: "Buy"
+        security:
+          type: string
+          maxLength: 250
+          minLength: 1
+          example: "AAPL"
+        fund-name:
+          type: string
+          maxLength: 250
+          minLength: 1
+          example: "MAG"
+        quantity:
+          type: integer
+          format: int64
+          maxLength: 100000
+          example: 1000
+        price:
+          type: integer
+          maxLength: 900000
+          example: 700
+    ErrorResponse:
+      required:
+        - code
+        - message
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: A server defined error code that uniquely identifies error
+        message:
+          type: string
+          description: Description of the code
+      description: >-
+        An object containing more specific information than the current object
+        about the error.

@@ -1,0 +1,133 @@
+import org.openapitools.codegen.CodegenConstants
+import org.openapitools.codegen.languages.SpringCodegen
+
+buildscript {
+    ext{
+        serviceName = "trade-order-api"
+        servicePackage = "com.fcr.trade.orders"
+        configPackageName = "${servicePackage}.client.config"
+        outputFolder = "src/generated-sources/java"
+        outputDirPath = "${projectDir}"
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.springframework.cloud:spring-cloud-contract-gradle-plugin:2.1.2.RELEASE'
+    }
+}
+
+plugins {
+    id 'org.springframework.boot' version '2.1.6.RELEASE'
+    id 'java'
+    id "org.openapi.generator" version "4.0.3"
+}
+
+apply plugin: 'spring-cloud-contract'
+apply plugin: 'io.spring.dependency-management'
+
+group = 'com.fcr.trade.orders'
+version = '1.0'
+sourceCompatibility = '1.8'
+
+configurations {
+    developmentOnly
+    runtimeClasspath {
+        extendsFrom developmentOnly
+    }
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    set('springCloudVersion', "Greenwich.SR2")
+}
+
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'org.springframework.boot:spring-boot-starter-quartz'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    // Swagger
+    implementation "io.springfox:springfox-swagger2:2.9.2"
+    implementation 'io.springfox:springfox-swagger-ui:2.9.2'
+    implementation 'org.openapitools:jackson-databind-nullable:0.2.0'
+
+    compileOnly 'org.projectlombok:lombok'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
+    testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+compileJava.dependsOn tasks.openApiGenerate
+
+openApiGenerate {
+    generatorName = "spring"
+    inputSpec = "$rootDir/specs/trade-orders.yaml".toString()
+    outputDir = "${projectDir}/src/generated-sources/java".toString()
+    apiPackage = "com.fcr.trade.orders.api"
+    invokerPackage = "com.fcr.trade.orders.invoker"
+    modelPackage = "com.fcr.trade.orders.model"
+    configOptions = [
+            dateLibrary: "java8"
+    ]
+    logToStderr = true
+    generateAliasAsModel = false
+    enablePostProcessFile = false
+    validateSpec = true
+    // Artifact info
+    groupId = "${project.group}".toString()
+    id = "${project.name}".toString()
+    version = "${project.version}".toString()
+    configOptions = [
+            (SpringCodegen.DATE_LIBRARY): "java8".toString(),
+            (SpringCodegen.CONFIG_PACKAGE): configPackageName.toString(),
+            (CodegenConstants.SOURCE_FOLDER):  outputFolder.toString()
+    ]
+
+    additionalProperties = [
+ //           (SpringCodegen.TITLE): serviceName.toString(),
+//            (SpringCodegen.USE_TAGS): true,
+            (SpringCodegen.INTERFACE_ONLY): true,
+            (CodegenConstants.SERIALIZABLE_MODEL): true,
+            serviceVersion: "${project.version}".toString(),
+    ]
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs += [ 'src/generated-sources/java' ]
+        }
+    }
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+}
+
+// configuration of the artifacts to include in the assemble task
+artifacts {
+    archives sourcesJar
+}
+
+clean {
+    doLast {
+        logger.quiet("Deleting output folder: ${outputDirPath}/${outputFolder}")
+        project.delete "${outputDirPath}/${outputFolder}"
+    }
+}
+compileJava.dependsOn tasks.openApiGenerate
