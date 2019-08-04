@@ -13,28 +13,86 @@ paths:
       summary: Create a trade order
       operationId: createOrder
       tags:
-        - trade-order-api
-
+        - tradeOrderApi
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Orders'
+              $ref: '#/components/schemas/Order'
       responses:
-        '201':
+        '200':
           description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /trade/orders/summary:
+    get:
+      summary: >-
+        Total number of orders, with the total quantity and average price.
+        It should also return the total number of combinable orders (see definition below)
+      operationId: getSummary
+      tags:
+        - tradeOrderApi
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetOrderResponse'
+  /trade/orders/security/{security}:
+    get:
+      summary:  summary for a specified security
+      operationId: getOrderBySecurity
+      tags:
+        - tradeOrderApi
+      parameters:
+        - name: security
+          in: path
+          description: Security Id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetOrderResponse'
+  /trade/orders/fund/{fund}:
+    get:
+      summary:  summary for a specified fund
+      operationId: getOrderByFund
+      tags:
+        - tradeOrderApi
+      parameters:
+        - name: fund
+          in: path
+          description: fund
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetOrderResponse'
 components:
   schemas:
-    Orders:
-      type: array
-      items:
-        $ref: "#/components/schemas/Order"
+    OrderResponse:
+      properties:
+        orderId:
+          type: string
     Order:
       required:
         - side
@@ -65,9 +123,23 @@ components:
           maxLength: 100000
           example: 1000
         price:
-          type: integer
+          type: number
           maxLength: 900000
           example: 700
+    GetOrderResponse:
+      properties:
+        type:
+          type: string
+        totalNumberOfOrders:
+          type: integer
+          format: int32
+        totalQuantity:
+          type: integer
+          format: int64
+        averagePrice:
+          type: number
+        combinalOrder:
+          type: string
     ErrorResponse:
       required:
         - code
