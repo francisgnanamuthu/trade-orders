@@ -2,37 +2,36 @@ package com.fcr.trade.orders.cache;
 
 import com.fcr.trade.orders.model.OrderResponseDto;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
-
-@EnableCaching
 @Slf4j
 @Component
 public class TradeOrderCacheImpl implements TradeOrderCache {
 
-    @Cacheable("orderInfo")
-    public Map<String, OrderResponseDto> SummaryCache() {
-        log.error("Map Not Exist");
-        return null;
+    private org.springframework.cache.CacheManager manager;
+
+    public TradeOrderCacheImpl(CacheManager manager) {
+        this.manager = manager;
     }
 
-    @Override
-    @CachePut("orderInfo")
-    public void save() {
-
+    public void save(String cacheKey, OrderResponseDto orderResponseDto) {
+        manager.getCache("orderInfo").put(cacheKey, orderResponseDto);
     }
 
     @Override
     public OrderResponseDto retrieve(String cacheKey) {
-        return null;
+        Cache.ValueWrapper obj = manager.getCache("orderInfo").get(cacheKey);
+        if (obj == null) {
+            return null;
+        }
+        return (OrderResponseDto) obj.get();
     }
 
     @Override
     public void invalidate(String cacheKey) {
 
     }
+
 }

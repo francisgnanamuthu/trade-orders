@@ -4,7 +4,7 @@ import com.fcr.trade.orders.model.OrderResponseDto;
 
 public interface TradeOrderCache {
 
-    void save();
+    void save(String key, OrderResponseDto orderResponseDto);
 
     OrderResponseDto retrieve(String cacheKey);
 

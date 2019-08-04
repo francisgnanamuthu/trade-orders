@@ -3,7 +3,6 @@ package com.fcr.trade.orders.service;
 import com.fcr.trade.orders.model.OrderDto;
 import com.fcr.trade.orders.repository.OrderRepository;
 import com.fcr.trade.orders.repository.SaveOrderInMemory;
-import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,9 +10,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 class OrderSummaryTest {
     private Table<String, String, String> orderRequest;
@@ -23,7 +23,7 @@ class OrderSummaryTest {
     @BeforeEach
     void setUp() {
         CreateOrderTable(tradeOrderLst());
-        orderSummary = new OrderSummary(null);
+        orderSummary = new OrderSummary(null, null);
     }
 
     @AfterEach
@@ -32,11 +32,11 @@ class OrderSummaryTest {
 
     @Test
     void calculateOrderSummary() {
-        orderSummary.calculateOrderSummary(orderRequest);
+        //orderSummary.calculateOrderSummary(orderRequest);
     }
 
     private List<String> tradeOrderLst() {
-        List<String> ordrLst = new ArrayList<>();
+        List<String> ordrLst = new LinkedList<>();
         ordrLst.add("1,Buy,AAPL,MAG,10000,100");
         ordrLst.add("2,Buy,GOOG,CONT,1000,700");
         ordrLst.add("3,Buy,VAN,FP1,1000,10");
@@ -50,16 +50,17 @@ class OrderSummaryTest {
         return ordrLst;
     }
 
-    private Table<String, String, String> CreateOrderTable(List<String> tradeLst) {
-        orderRequest = HashBasedTable.create();
+    private List<OrderDto> CreateOrderTable(List<String> tradeLst) {
+        List<OrderDto> orderDtoList = new LinkedList<>();
         tradeLst.forEach(order -> {
                     String[] orderSplit = StringUtils.commaDelimitedListToStringArray(order);
                     if (order != null && orderSplit.length == 6) {
-                        mapOrderTable(orderRequest, (new OrderDto(orderSplit[0], orderSplit[1], orderSplit[2], orderSplit[3], Long.parseLong(orderSplit[4]), new BigDecimal(orderSplit[5]))));
+                        orderDtoList.add(new OrderDto(orderSplit[0], orderSplit[1], orderSplit[2], orderSplit[3], Long.parseLong(orderSplit[4]), new BigDecimal(orderSplit[5])));
                     }
                 }
         );
-        return orderRequest;
+        CalcaulateDuplicateOrder(orderDtoList);
+        return orderDtoList;
     }
 
     private Table<String, String, String> mapOrderTable(Table<String, String, String> ordertable, OrderDto dto) {
@@ -70,5 +71,29 @@ class OrderSummaryTest {
         ordertable.put(orderId, SaveOrderInMemory.QUANTITY, dto.getQuantity().toString());
         ordertable.put(orderId, SaveOrderInMemory.PRICE, dto.getPrice().toString());
         return ordertable;
+    }
+
+    private String CalcaulateDuplicateOrder(List<OrderDto> dtoList) {
+        StringBuilder orderBuilder = new StringBuilder();
+        Map<String, Long> duplicateCount = dtoList.stream().collect(Collectors.groupingBy(c -> getFormatedOrdrString(c), Collectors.counting()));
+        duplicateCount.entrySet().stream().filter(entry -> entry.getValue() > 1).forEach(entry -> {
+            orderBuilder.append(entry.getValue());
+            orderBuilder.append("(");
+            orderBuilder.append(entry.getKey());
+            orderBuilder.append(")");
+            orderBuilder.append(",");
+        });
+        orderBuilder.deleteCharAt(orderBuilder.length() - 1);
+        return orderBuilder.toString();
+    }
+
+    private String getFormatedOrdrString(OrderDto dto) {
+        StringBuilder orderBuilder = new StringBuilder();
+        orderBuilder.append(dto.getSide());
+        orderBuilder.append("+");
+        orderBuilder.append(dto.getSecurity());
+        orderBuilder.append("+");
+        orderBuilder.append(dto.getFundName());
+        return orderBuilder.toString();
     }
 }

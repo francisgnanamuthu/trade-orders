@@ -17,8 +17,10 @@ trade:
     - 8,Sell,VAN,FBSC,1000,10
     - 9,Buy,AAPL,FBIO,2000,100
     - 10,Sell,T,F2,1000,30
-spring:
-  cache:
-    cache-names: orderInfo
-    caffeine:
-      spec: "maximumSize=500"
+#spring:
+#  cache:
+#    cache-names: orderInfo
+#    caffeine:
+#      spec: maximumSize=500,expireAfterAccess=10m
+scheduler:
+  frequency: 100000L

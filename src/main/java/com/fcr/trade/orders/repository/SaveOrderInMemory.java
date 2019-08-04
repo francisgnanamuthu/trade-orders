@@ -5,6 +5,8 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import org.springframework.stereotype.Component;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -16,39 +18,29 @@ public class SaveOrderInMemory implements OrderRepository {
     public static final String FUND_NAME = "fund name";
     public static final String QUANTITY = "quantity";
     public static final String PRICE = "price";
-    private static Table<String, String, String> orderRequest;
+    private static List<OrderDto> dtoLinkedList;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     @Override
     public void saveOrder(OrderDto dto) {
         lock.writeLock().lock();
         try {
-            if (null == orderRequest) {
-                orderRequest = HashBasedTable.create();
+            if (null == dtoLinkedList) {
+                dtoLinkedList = new LinkedList<>();
             }
-            mapOrderTable(orderRequest, dto);
+            dtoLinkedList.add(dto);
         } finally {
             lock.writeLock().unlock();
         }
     }
 
-    @Override
-    public Table<String, String, String> orderSummary() {
+   @Override
+    public List<OrderDto> orderSummaryLst() {
         lock.readLock().lock();
         try {
-            return orderRequest;
+            return dtoLinkedList;
         } finally {
             lock.readLock().unlock();
         }
-    }
-
-    private Table<String, String, String> mapOrderTable(Table<String, String, String> ordertable, OrderDto dto) {
-        String orderId = dto.getOrderId();
-        ordertable.put(orderId, SIDE, dto.getSide());
-        ordertable.put(orderId, SECURITY, dto.getSecurity());
-        ordertable.put(orderId, FUND_NAME, dto.getFundName());
-        ordertable.put(orderId, QUANTITY, dto.getQuantity().toString());
-        ordertable.put(orderId, PRICE, dto.getPrice().toString());
-        return ordertable;
     }
 }

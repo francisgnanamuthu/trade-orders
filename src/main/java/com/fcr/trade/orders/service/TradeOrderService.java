@@ -1,38 +1,17 @@
 package com.fcr.trade.orders.service;
 
-import com.fcr.trade.orders.mapper.OrderMapper;
+import com.fcr.trade.orders.model.GetOrderResponse;
 import com.fcr.trade.orders.model.Order;
-import com.fcr.trade.orders.model.OrderDto;
 import com.fcr.trade.orders.model.OrderResponse;
-import com.fcr.trade.orders.repository.OrderRepository;
-import org.springframework.stereotype.Service;
 
-import java.util.UUID;
+public interface TradeOrderService {
 
-@Service
-public class TradeOrderService {
-    private OrderRepository orderRepository;
+    OrderResponse createOrder(Order order);
 
-    public TradeOrderService(OrderRepository orderRepository) {
-        this.orderRepository = orderRepository;
-    }
+    GetOrderResponse getSummary();
 
-    private String generateId() {
-        return UUID.randomUUID().toString();
-    }
+    GetOrderResponse getOrderByFund(String fund);
 
-    public OrderResponse createOrder(Order order) {
-        OrderResponse response = new OrderResponse();
-        response.setOrderId(processOrder(order));
-        return response;
+    GetOrderResponse getOrderBySecurity(String security);
 
-    }
-
-    private String processOrder(Order order) {
-        OrderDto dto = new OrderDto();
-        String uuid = generateId();
-        OrderMapper.mapOrderToOrderDto(order, dto, uuid);
-        this.orderRepository.saveOrder(dto);
-        return uuid;
-    }
 }

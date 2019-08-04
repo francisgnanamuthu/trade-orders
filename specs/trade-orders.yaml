@@ -13,7 +13,7 @@ paths:
       summary: Create a trade order
       operationId: createOrder
       tags:
-        - tradeOrderApi
+        - trade-order-api
       requestBody:
         content:
           application/json:
@@ -39,7 +39,7 @@ paths:
         It should also return the total number of combinable orders (see definition below)
       operationId: getSummary
       tags:
-        - tradeOrderApi
+        - trade-order-api
       responses:
         '200':
           description: Success
@@ -52,7 +52,7 @@ paths:
       summary:  summary for a specified security
       operationId: getOrderBySecurity
       tags:
-        - tradeOrderApi
+        - trade-order-api
       parameters:
         - name: security
           in: path
@@ -72,7 +72,7 @@ paths:
       summary:  summary for a specified fund
       operationId: getOrderByFund
       tags:
-        - tradeOrderApi
+        - trade-order-api
       parameters:
         - name: fund
           in: path
@@ -128,17 +128,15 @@ components:
           example: 700
     GetOrderResponse:
       properties:
-        type:
-          type: string
         totalNumberOfOrders:
           type: integer
-          format: int32
+          format: int64
         totalQuantity:
           type: integer
           format: int64
         averagePrice:
           type: number
-        combinalOrder:
+        combinableOrder:
           type: string
     ErrorResponse:
       required:
