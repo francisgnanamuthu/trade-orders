@@ -14,7 +14,7 @@ public abstract class CalculateOrder {
 
     public static final RoundingMode HALF_UP = RoundingMode.HALF_UP;
 
-    public String CalcaulateDuplicateOrder(OrderResponseDto responseDto, List<OrderDto> dtoList) {
+    public String calcaulateDuplicateOrder(OrderResponseDto responseDto, List<OrderDto> dtoList) {
         StringBuilder orderBuilder = new StringBuilder();
         Map<String, Long> duplicateCount = dtoList.stream().collect(Collectors.groupingBy(c -> getFormatedOrdrString(c), Collectors.counting()));
         duplicateCount.entrySet().stream().filter(entry -> entry.getValue() > 1).forEach(entry -> {
@@ -24,7 +24,7 @@ public abstract class CalculateOrder {
             orderBuilder.append(")");
             orderBuilder.append(",");
         });
-        orderBuilder.deleteCharAt(orderBuilder.length() - 1);
+        if (orderBuilder.length() > 1) orderBuilder.deleteCharAt(orderBuilder.length() - 1);
         responseDto.setCombinableOrder(orderBuilder.toString());
         return orderBuilder.toString();
 
@@ -40,12 +40,12 @@ public abstract class CalculateOrder {
         return orderBuilder.toString();
     }
 
-    public void CalculateTotalQuantity(OrderResponseDto responseDto, List<OrderDto> dtoList) {
+    public void calculateTotalQuantity(OrderResponseDto responseDto, List<OrderDto> dtoList) {
         Long totalQuantity = dtoList.stream().mapToLong(dto -> dto.getQuantity()).sum();
         responseDto.setTotalQuantity(totalQuantity);
     }
 
-    public void CalculateTotalPrice(OrderResponseDto responseDto, List<OrderDto> priceList) {
+    public void calculateTotalPrice(OrderResponseDto responseDto, List<OrderDto> priceList) {
         BigDecimal totalprice = priceList.stream().map(dto -> dto.getPrice()).reduce(BigDecimal.ZERO, BigDecimal::add);
         Long count = Long.valueOf(priceList.size());
         responseDto.setAveragePrice(totalprice.divide(BigDecimal.valueOf(count), HALF_UP));
@@ -56,19 +56,22 @@ public abstract class CalculateOrder {
         for (Iterator<OrderDto> iterator = dtoList.iterator(); iterator.hasNext(); ) {
             OrderDto dto = iterator.next();
             String security = dto.getSecurity().trim();
-            calculateByOrderKey(responseDtoMap, dto, security);
+            calculateByOrderKey(dtoList, responseDtoMap, dto, security);
             String fund = dto.getFundName().trim();
-            calculateByOrderKey(responseDtoMap, dto, fund);
+            calculateByOrderKey(dtoList, responseDtoMap, dto, fund);
         }
     }
 
-    private void calculateByOrderKey(Map<String, OrderResponseDto> responseDtoMap, OrderDto dto, String key) {
+    private void calculateByOrderKey(List<OrderDto> dtoList, Map<String, OrderResponseDto> responseDtoMap, OrderDto dto, String key) {
         if (responseDtoMap.containsKey(key)) {
             OrderResponseDto responseDto = responseDtoMap.get(key);
-            responseDtoMap.put(key, addExisitingOrderByKey(dto, responseDto));
-
+            responseDto = addExisitingOrderByKey(dto, responseDto);
+            calcaulateDuplicateOrderbyKey(dtoList, key, responseDto);
+            responseDtoMap.put(key, responseDto);
         } else {
-            responseDtoMap.put(key, addNewOrderByKey(dto, new OrderResponseDto()));
+            OrderResponseDto responseDto = addNewOrderByKey(dto, new OrderResponseDto());
+            calcaulateDuplicateOrderbyKey(dtoList, key, responseDto);
+            responseDtoMap.put(key, responseDto);
         }
     }
 
@@ -78,6 +81,23 @@ public abstract class CalculateOrder {
         responseDto.setTotalNumberOfOrders(1L);
         return responseDto;
     }
+
+    public String calcaulateDuplicateOrderbyKey(List<OrderDto> dtoList, String key, OrderResponseDto responseDto) {
+        StringBuilder orderBuilder = new StringBuilder();
+        Map<String, Long> duplicateCount = dtoList.stream().collect(Collectors.groupingBy(c -> getFormatedOrdrString(c), Collectors.counting()));
+        duplicateCount.entrySet().stream().filter(entry -> (entry.getValue() > 1 && entry.getKey().contains(key))).forEach(entry -> {
+            orderBuilder.append(entry.getValue());
+            orderBuilder.append("(");
+            orderBuilder.append(entry.getKey());
+            orderBuilder.append(")");
+            orderBuilder.append(",");
+        });
+        if (orderBuilder.length() > 1) orderBuilder.deleteCharAt(orderBuilder.length() - 1);
+        responseDto.setCombinableOrder(orderBuilder.toString());
+        return orderBuilder.toString();
+
+    }
+
 
     private OrderResponseDto addExisitingOrderByKey(OrderDto dto, OrderResponseDto responseDto) {
         BigDecimal totalprice = responseDto.getAveragePrice().add(dto.getPrice());

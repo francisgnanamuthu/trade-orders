@@ -46,9 +46,9 @@ public class OrderReadScheduler extends CalculateOrder {
      */
     private OrderResponseDto calculateOrderSummary(List<OrderDto> dtoList, ConcurrentHashMap<String, OrderResponseDto> orderMap) {
         OrderResponseDto responseDto = new OrderResponseDto();
-        CalculateTotalPrice(responseDto, dtoList);
-        CalculateTotalQuantity(responseDto, dtoList);
-        CalcaulateDuplicateOrder(responseDto, dtoList);
+        calculateTotalPrice(responseDto, dtoList);
+        calculateTotalQuantity(responseDto, dtoList);
+        calcaulateDuplicateOrder(responseDto, dtoList);
         orderMap.put(SUMMARY, responseDto);
         return responseDto;
     }
