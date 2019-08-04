@@ -8,7 +8,6 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 public class OrderResponseDto {
-    private String type;
     private Long totalNumberOfOrders;
     private Long totalQuantity;
     private BigDecimal averagePrice;
