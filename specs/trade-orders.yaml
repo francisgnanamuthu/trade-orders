@@ -36,7 +36,6 @@ paths:
     get:
       summary: >-
         Total number of orders, with the total quantity and average price.
-        It should also return the total number of combinable orders (see definition below)
       operationId: getSummary
       tags:
         - trade-order-api
