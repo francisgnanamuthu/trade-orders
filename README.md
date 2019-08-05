@@ -3,23 +3,12 @@
 ## Project Tree
 
 ```
-├───gradle
-│   └───wrapper
 ├───specs
 └───src
     ├───generated-sources
     │   └───java
-    │       ├───.openapi-generator
-    │       └───src
-    │           └───generated-sources
-    │               └───java
-    │                   └───com
-    │                       └───fcr
-    │                           └───trade
-    │                               └───orders
-    │                                   ├───api
-    │                                   └───model
     ├───main
+    │   ├───groovy
     │   ├───java
     │   │   └───com
     │   │       └───fcr
@@ -35,13 +24,19 @@
     │   │                   └───service
     │   └───resources
     └───test
-        └───java
-            └───com
-                └───fcr
-                    └───trade
-                        └───orders
-                            ├───mapper
-                            ├───scheduler
-                            └───service
+        ├───groovy
+        │   └───com
+        │       └───fcr
+        │           └───trade
+        │               └───orders
+        ├───java
+        │   └───com
+        │       └───fcr
+        │           └───trade
+        │               └───orders
+        │                   ├───mapper
+        │                   ├───scheduler
+        │                   └───service
+        └───resources
 ```
 
