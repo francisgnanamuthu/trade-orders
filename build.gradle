@@ -142,3 +142,11 @@ clean {
     }
 }
 compileJava.dependsOn tasks.openApiGenerate
+
+test{
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+    exclude '**/com/fcr/trade/orders/RunStorySuite.class'
+    systemProperty "com.athaydes.spockframework.report.outputDir", 'build/reports/spock'
+}
