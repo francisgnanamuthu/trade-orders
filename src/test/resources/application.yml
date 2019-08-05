@@ -1,0 +1,18 @@
+server:
+  port: 8090
+
+scheduler:
+  frequency: 100000L
+
+trade:
+  order:
+    - 1,Buy,AAPL,MAG,10000,100
+    - 2,Buy,GOOG,CONT,1000,700
+    - 3,Buy,VAN,FP1,1000,10
+    - 4,Buy,AAPL,MAG,2000,100
+    - 5,Sell,T,F2,1000,30
+    - 6,Buy,VZ,CANA,1000,50
+    - 7,Buy,GOOG,CANA,1000,700
+    - 8,Sell,VAN,FBSC,1000,10
+    - 9,Buy,AAPL,FBIO,2000,100
+    - 10,Sell,T,F2,1000,30
